@@ -33,5 +33,5 @@ The high-level concepts of each project are as follows:
 15. Wei-Yao Wang, Kai-Shiang Chang, Teng-Fong Chen, Chih-Chuan Wang, Wen-Chih Peng, Chih-Wei Yi, "Badminton Coach AI: A Badminton Match Data Analysis Platform Based on Deep Learning", Physical Education Journal 2020, [paper](https://www.airitilibrary.com/Publication/alDetailedMesh?docid=10247297-202006-202007060015-202007060015-201-213)
 
 ## References
-If you use our dataset or find our project is relevant to your research, please bib format from [here](https://github.com/wywyWang/CoachAI-Projects/blob/main/CITATIONS.bib).
+If you use our dataset or find our project is relevant to your research, please refer to related bib formats from [here](https://github.com/wywyWang/CoachAI-Projects/blob/main/CITATIONS.bib).
 
