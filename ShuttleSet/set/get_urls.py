@@ -43,7 +43,11 @@ def read_urls(csv_path: pathlib.Path) -> List[str]:
     return urls
 
 
-def download_videos(urls: List[str], output_dir: pathlib.Path) -> None:
+def download_videos(
+    urls: List[str],
+    output_dir: pathlib.Path,
+    ffmpeg_location: Optional[pathlib.Path] = None,
+) -> None:
     """
     Download videos using yt-dlp.
 
@@ -53,6 +57,8 @@ def download_videos(urls: List[str], output_dir: pathlib.Path) -> None:
         List of URLs to download.
     output_dir : pathlib.Path
         Directory where videos will be saved.
+    ffmpeg_location : pathlib.Path | None
+        Path to the ffmpeg binary. If provided, yt-dlp will use this location.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -61,11 +67,17 @@ def download_videos(urls: List[str], output_dir: pathlib.Path) -> None:
         # and merge them into a single file (mp4 by default).
         cmd = [
             "yt-dlp",
-            "-f", "bestvideo+bestaudio/best",
-            "--merge-output-format", "mp4",
-            "-o", str(output_dir / "%(title)s.%(ext)s"),
+            "-f",
+            "bestvideo+bestaudio/best",
+            "--merge-output-format",
+            "mp4",
+            "-o",
+            str(output_dir / "%(title)s.%(ext)s"),
             url,
         ]
+
+        if ffmpeg_location:
+            cmd.extend(["--ffmpeg-location", str(ffmpeg_location)])
 
         try:
             print(f"Downloading: {url}")
@@ -74,7 +86,12 @@ def download_videos(urls: List[str], output_dir: pathlib.Path) -> None:
             print(f"Error downloading {url}: {e}", file=sys.stderr)
 
 
-def main(csv_path: pathlib.Path, download: bool, output_dir: Optional[pathlib.Path]) -> None:
+def main(
+    csv_path: pathlib.Path,
+    download: bool,
+    output_dir: Optional[pathlib.Path],
+    ffmpeg_location: Optional[pathlib.Path],
+) -> None:
     """
     Main entry point.
 
@@ -86,13 +103,15 @@ def main(csv_path: pathlib.Path, download: bool, output_dir: Optional[pathlib.Pa
         If True, download videos using yt-dlp.
     output_dir : pathlib.Path | None
         Directory to save downloaded videos. Ignored if download is False.
+    ffmpeg_location : pathlib.Path | None
+        Path to the ffmpeg binary. If provided, yt-dlp will use this location.
     """
     urls = read_urls(csv_path)
 
     if download:
         if output_dir is None:
             output_dir = pathlib.Path.cwd() / "videos"
-        download_videos(urls, output_dir)
+        download_videos(urls, output_dir, ffmpeg_location)
     else:
         for url in urls:
             print(url)
@@ -119,10 +138,16 @@ if __name__ == "__main__":
         default=None,
         help="Path to the CSV file (default: match.csv in script directory).",
     )
+    parser.add_argument(
+        "--ffmpeg-location",
+        type=pathlib.Path,
+        default=None,
+        help="Path to the ffmpeg binary (e.g., /Users/loislo/home-env/lib/python3.13/site-packages/ffmpeg).",
+    )
 
     args = parser.parse_args()
 
     script_dir = pathlib.Path(__file__).parent
     csv_file = args.csv if args.csv else script_dir / "match.csv"
 
-    main(csv_file, args.download, args.output_dir)
+    main(csv_file, args.download, args.output_dir, args.ffmpeg_location)
