@@ -57,11 +57,13 @@ def download_videos(urls: List[str], output_dir: pathlib.Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for url in urls:
-        # Build yt-dlp command
+        # Build yt-dlp command to download the best video + best audio
+        # and merge them into a single file (mp4 by default).
         cmd = [
             "yt-dlp",
-            "-o",
-            str(output_dir / "%(title)s.%(ext)s"),
+            "-f", "bestvideo+bestaudio/best",
+            "--merge-output-format", "mp4",
+            "-o", str(output_dir / "%(title)s.%(ext)s"),
             url,
         ]
 
