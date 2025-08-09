@@ -43,6 +43,42 @@ def read_urls(csv_path: pathlib.Path) -> List[str]:
     return urls
 
 
+def get_expected_filename(
+    url: str,
+    output_dir: pathlib.Path,
+    ffmpeg_location: Optional[pathlib.Path] = None,
+) -> pathlib.Path:
+    """
+    Use yt-dlp to determine the filename that would be produced for a given URL.
+    """
+    cmd = [
+        "yt-dlp",
+        "--get-filename",
+        "-o",
+        str(output_dir / "%(title)s.%(ext)s"),
+        url,
+    ]
+
+    if ffmpeg_location:
+        cmd.extend(["--ffmpeg-location", str(ffmpeg_location))]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        # yt-dlp prints the filename on stdout
+        filename = result.stdout.strip()
+        return output_dir / filename
+    except subprocess.CalledProcessError as e:
+        print(f"Error determining filename for {url}: {e}", file=sys.stderr)
+        # Fallback: use a generic name
+        return output_dir / f"download_{hash(url)}.mp4"
+
+
 def download_videos(
     urls: List[str],
     output_dir: pathlib.Path,
@@ -63,6 +99,13 @@ def download_videos(
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for url in urls:
+        # Determine the expected filename before downloading
+        expected_file = get_expected_filename(url, output_dir, ffmpeg_location)
+
+        if expected_file.is_file():
+            print(f"Skipping {url} – already downloaded as {expected_file.name}")
+            continue
+
         # Build yt-dlp command to download the best video + best audio
         # and merge them into a single file (mp4 by default).
         cmd = [
@@ -77,7 +120,7 @@ def download_videos(
         ]
 
         if ffmpeg_location:
-            cmd.extend(["--ffmpeg-location", str(ffmpeg_location)])
+            cmd.extend(["--ffmpeg-location", str(ffmpeg_location))]
 
         try:
             print(f"Downloading: {url}")
