@@ -38,12 +38,12 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
     "input_csv",
-    "CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match.csv",
+    "match.csv",
     "Path to the input CSV file containing match data.",
 )
 flags.DEFINE_string(
     "output_csv",
-    "CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match_with_urls.csv",
+    "match_with_urls.csv",
     "Path to the output CSV file that will contain the enriched data.",
 )
 flags.DEFINE_string(
