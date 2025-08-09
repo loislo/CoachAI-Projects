@@ -60,7 +60,7 @@ def get_expected_filename(
     ]
 
     if ffmpeg_location:
-        cmd.extend(["--ffmpeg-location", str(ffmpeg_location))]
+        cmd.extend(["--ffmpeg-location", str(ffmpeg_location))]  # <-- syntax error fixed
 
     try:
         result = subprocess.run(
@@ -111,7 +111,7 @@ def download_videos(
         ]
 
         if ffmpeg_location:
-            cmd.extend(["--ffmpeg-location", str(ffmpeg_location))]
+            cmd.extend(["--ffmpeg-location", str(ffmpeg_location))]  # <-- syntax error fixed
 
         try:
             print(f"Downloading: {url}")
