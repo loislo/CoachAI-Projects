@@ -2,8 +2,8 @@
 """
 get_urls.py
 
-This script reads the `ShuttleSet/set/match.csv` file and extracts all non-empty URLs.
-It can optionally download the videos using yt-dlp.
+This script reads the `ShuttleSet/set/match.csv` file and extracts all non‑empty URLs.
+It can optionally download the videos using yt‑dlp.
 
 Usage:
     python3 get_urls.py                # just print URLs
@@ -21,7 +21,7 @@ from typing import Optional, List
 
 def read_urls(csv_path: pathlib.Path) -> List[str]:
     """
-    Read the CSV file at `csv_path` and return a list of non-empty URLs.
+    Read the CSV file at `csv_path` and return a list of non‑empty URLs.
     """
     if not csv_path.is_file():
         print(f"Error: CSV file not found: {csv_path}", file=sys.stderr)
@@ -49,7 +49,7 @@ def get_expected_filename(
     ffmpeg_location: Optional[pathlib.Path] = None,
 ) -> pathlib.Path:
     """
-    Use yt-dlp to determine the filename that would be produced for a given URL.
+    Use yt‑dlp to determine the filename that would be produced for a given URL.
     """
     cmd = [
         "yt-dlp",
@@ -70,7 +70,7 @@ def get_expected_filename(
             stderr=subprocess.PIPE,
             text=True,
         )
-        # yt-dlp prints the filename on stdout
+        # yt‑dlp prints the filename on stdout
         filename = result.stdout.strip()
         return output_dir / filename
     except subprocess.CalledProcessError as e:
@@ -85,16 +85,7 @@ def download_videos(
     ffmpeg_location: Optional[pathlib.Path] = None,
 ) -> None:
     """
-    Download videos using yt-dlp.
-
-    Parameters
-    ----------
-    urls : List[str]
-        List of URLs to download.
-    output_dir : pathlib.Path
-        Directory where videos will be saved.
-    ffmpeg_location : pathlib.Path | None
-        Path to the ffmpeg binary. If provided, yt-dlp will use this location.
+    Download videos using yt‑dlp.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -106,7 +97,7 @@ def download_videos(
             print(f"Skipping {url} – already downloaded as {expected_file.name}")
             continue
 
-        # Build yt-dlp command to download the best video + best audio
+        # Build yt‑dlp command to download the best video + best audio
         # and merge them into a single file (mp4 by default).
         cmd = [
             "yt-dlp",
@@ -137,17 +128,6 @@ def main(
 ) -> None:
     """
     Main entry point.
-
-    Parameters
-    ----------
-    csv_path : pathlib.Path
-        Path to the CSV file containing match data.
-    download : bool
-        If True, download videos using yt-dlp.
-    output_dir : pathlib.Path | None
-        Directory to save downloaded videos. Ignored if download is False.
-    ffmpeg_location : pathlib.Path | None
-        Path to the ffmpeg binary. If provided, yt-dlp will use this location.
     """
     urls = read_urls(csv_path)
 
@@ -162,12 +142,12 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Extract URLs from match.csv and optionally download videos with yt-dlp."
+        description="Extract URLs from match.csv and optionally download videos with yt‑dlp."
     )
     parser.add_argument(
         "--download",
         action="store_true",
-        help="Download videos using yt-dlp instead of printing URLs.",
+        help="Download videos using yt‑dlp instead of printing URLs.",
     )
     parser.add_argument(
         "--output-dir",
