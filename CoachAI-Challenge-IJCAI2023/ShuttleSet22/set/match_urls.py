@@ -3,11 +3,10 @@
 Utility script to generate YouTube URLs for all matches listed in
 CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match.csv.
 
-The CSV contains a column named `video` that holds the YouTube video ID
-for each match.  If the column is empty or missing, the script will
-attempt to find the correct video on YouTube by searching with the
-match metadata (tournament, round, year, etc.).  The first search
-result is used as the video ID.
+The CSV contains a column named `video` that holds a descriptive name
+for the match (e.g., "YONEX THAILAND OPEN 2021 Quarter-finals").
+The script will use this name as a search query on YouTube and
+take the first result as the video ID.
 
 The script uses absl.flags for command‑line argument parsing and the
 Google YouTube Data API v3 for searching.  An API key must be
@@ -130,32 +129,6 @@ def search_video_id(query: str, max_results: int = 1) -> str:
     return items[0]["id"]["videoId"]
 
 
-def build_search_query(row: dict) -> str:
-    """
-    Construct a YouTube search query from a CSV row.
-
-    Parameters
-    ----------
-    row : dict
-        A dictionary representing a CSV row.
-
-    Returns
-    -------
-    str
-        A search query string that includes tournament name, round,
-        year, and any other relevant fields.
-    """
-    parts = [
-        row.get("tournament", ""),
-        row.get("round", ""),
-        row.get("year", ""),
-        row.get("month", ""),
-        row.get("day", ""),
-    ]
-    # Filter out empty strings and join with spaces
-    return " ".join(part for part in parts if part)
-
-
 def main(argv):
     # Allow absl to consume any flags; ignore the rest.
     del argv
@@ -177,19 +150,15 @@ def main(argv):
         writer.writeheader()
 
         for row in reader:
-            # Prefer an existing video ID if present
-            video_id = row.get("video", "").strip()
-            if not video_id:
-                # Build a search query from the row data
-                query = build_search_query(row)
-                if query:
-                    try:
-                        video_id = search_video_id(query, FLAGS.max_results)
-                    except Exception as e:
-                        # Log the error and continue with an empty URL
-                        print(f"⚠️  Failed to search YouTube for '{query}': {e}")
-                        video_id = ""
-                else:
+            # Use the 'video' column as a search query
+            query = row.get("video", "").strip()
+            video_id = ""
+            if query:
+                try:
+                    video_id = search_video_id(query, FLAGS.max_results)
+                except Exception as e:
+                    # Log the error and continue with an empty URL
+                    print(f"⚠️  Failed to search YouTube for '{query}': {e}")
                     video_id = ""
 
             youtube_url = generate_youtube_url(video_id) if video_id else ""
