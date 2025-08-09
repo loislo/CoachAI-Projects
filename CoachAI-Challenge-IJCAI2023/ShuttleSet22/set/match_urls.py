@@ -8,23 +8,37 @@ for each match.  This script reads the CSV, constructs the full YouTube
 URL for each match, and writes the results to a new CSV file
 `match_with_urls.csv` in the same directory.
 
-Usage:
-    python match_urls.py
+The script uses absl.flags for command‑line argument parsing.
 
-The output CSV will have the same columns as the input, plus an
-additional column `youtube_url`.
+Usage:
+    python match_urls.py --input_csv=path/to/match.csv \
+                         --output_csv=path/to/match_with_urls.csv
 """
 
 import csv
 import os
 from pathlib import Path
 
-# Path to the original match CSV
-INPUT_CSV = Path("CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match.csv")
-# Path to the output CSV
-OUTPUT_CSV = Path("CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match_with_urls.csv")
+from absl import app
+from absl import flags
 
-YOUTUBE_BASE = "https://www.youtube.com/watch?v="
+FLAGS = flags.FLAGS
+
+flags.DEFINE_string(
+    "input_csv",
+    "CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match.csv",
+    "Path to the input CSV file containing match data.",
+)
+flags.DEFINE_string(
+    "output_csv",
+    "CoachAI-Challenge-IJCAI2023/ShuttleSet22/set/match_with_urls.csv",
+    "Path to the output CSV file that will contain the enriched data.",
+)
+flags.DEFINE_string(
+    "youtube_base",
+    "https://www.youtube.com/watch?v=",
+    "Base URL for YouTube videos.",
+)
 
 
 def generate_youtube_url(video_id: str) -> str:
@@ -41,19 +55,21 @@ def generate_youtube_url(video_id: str) -> str:
     str
         The full YouTube URL.
     """
-    return f"{YOUTUBE_BASE}{video_id}"
+    return f"{FLAGS.youtube_base}{video_id}"
 
 
-def main() -> None:
-    """
-    Read the input CSV, generate YouTube URLs, and write the enriched
-    data to the output CSV.
-    """
-    if not INPUT_CSV.exists():
-        raise FileNotFoundError(f"Input file not found: {INPUT_CSV}")
+def main(argv):
+    # Allow absl to consume any flags; ignore the rest.
+    del argv
 
-    with INPUT_CSV.open(newline="", encoding="utf-8") as infile, \
-         OUTPUT_CSV.open("w", newline="", encoding="utf-8") as outfile:
+    input_csv = Path(FLAGS.input_csv)
+    output_csv = Path(FLAGS.output_csv)
+
+    if not input_csv.exists():
+        raise FileNotFoundError(f"Input file not found: {input_csv}")
+
+    with input_csv.open(newline="", encoding="utf-8") as infile, \
+         output_csv.open("w", newline="", encoding="utf-8") as outfile:
 
         reader = csv.DictReader(infile)
         fieldnames = reader.fieldnames + ["youtube_url"]
@@ -63,17 +79,12 @@ def main() -> None:
 
         for row in reader:
             video_id = row.get("video", "").strip()
-            if not video_id:
-                # If the video field is empty, leave the URL blank
-                youtube_url = ""
-            else:
-                youtube_url = generate_youtube_url(video_id)
-
+            youtube_url = generate_youtube_url(video_id) if video_id else ""
             row["youtube_url"] = youtube_url
             writer.writerow(row)
 
-    print(f"✅ URLs written to {OUTPUT_CSV}")
+    print(f"✅ URLs written to {output_csv}")
 
 
 if __name__ == "__main__":
-    main()
+    app.run(main)
